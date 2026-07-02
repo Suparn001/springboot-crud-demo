@@ -2,10 +2,10 @@ package com.gautam.crudSpringBootDemo.repository;
 
 
 import com.gautam.crudSpringBootDemo.entity.Student;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public class StudentRepository {
-    public Student saveStudent(Student student) {
-        // save to db
-        return null;
-    }
+//@Repository(not required as this is interface)
+public interface StudentRepository extends JpaRepository<Student, Long> {
+
+
 }
