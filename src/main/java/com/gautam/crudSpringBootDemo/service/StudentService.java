@@ -24,7 +24,9 @@ public class StudentService {
     }
 
     public Student getSingleStudent(Long id) {
-        Optional<Student> studentRes = studentRepository.findById(id);
+
+//        Optional<Student> studentRes = studentRepository.findById(id);
+        Optional<Student> studentRes = studentRepository.findByIdAndDeletedIsFalse(id);
         if (studentRes.isPresent()) {
             return studentRes.get();
         } else {
@@ -33,12 +35,14 @@ public class StudentService {
     }
 
     public List<Student> getAllStudents() {
-        List<Student> studentList = studentRepository.findAll();
+
+        List<Student> studentList = studentRepository.findByDeletedIsFalse();
+//        List<Student> studentList = studentRepository.findAll();
         return studentList;
     }
 
     public Student updateStudent(Long id, Student student) {
-        Optional<Student> studentRes = studentRepository.findById(id);
+        Optional<Student> studentRes = studentRepository.findByIdAndDeletedIsFalse(id);
         if (studentRes.isEmpty()) {
             return null;
         } else {
@@ -47,6 +51,7 @@ public class StudentService {
             studentToBeUpdated.setAge(student.getAge());
             studentToBeUpdated.setSubject(student.getSubject());
             studentToBeUpdated.setEmail(student.getEmail());
+            studentToBeUpdated.setDeleted(false);
             return studentRepository.save(studentToBeUpdated);
 
         }
@@ -60,5 +65,20 @@ public class StudentService {
         } else {
             return false;
         }
+    }
+
+    public Boolean deleteStudentSoftly(Long id) {
+        // get the record
+        Optional<Student> existingStudent = studentRepository.findByIdAndDeletedIsFalse(id);
+        if (existingStudent.isEmpty()) {
+            return false;
+        } else {
+            Student studentToSave = existingStudent.get();
+            studentToSave.setDeleted(true);
+            studentRepository.save(existingStudent.get());
+            return true;
+        }
+        // update is_Deleted to 0
+        // save
     }
 }

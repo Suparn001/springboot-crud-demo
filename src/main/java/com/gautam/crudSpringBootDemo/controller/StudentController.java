@@ -23,6 +23,7 @@ public class StudentController {
     public ResponseEntity<Student> createStudent(
             @RequestBody Student student
     ) {
+        student.setDeleted(false);
         Student studentSaved = studentService.createStudent(student);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -89,6 +90,14 @@ public class StudentController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @PatchMapping("{id}")
+    public ResponseEntity<String> deleteStudentSoftly(
+            @PathVariable Long id
+    ) {
+        Boolean isDeleted = studentService.deleteStudentSoftly(id);
+        return null;
     }
 
 }
