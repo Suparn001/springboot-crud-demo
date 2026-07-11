@@ -5,12 +5,13 @@ import com.gautam.crudSpringBootDemo.dto.CreateStudentResponseDTO;
 import com.gautam.crudSpringBootDemo.dto.UpdateStudentRequestDTO;
 import com.gautam.crudSpringBootDemo.dto.UpdateStudentResponseDTO;
 import com.gautam.crudSpringBootDemo.entity.Student;
+import com.gautam.crudSpringBootDemo.exception.DuplicateResourceException;
+import com.gautam.crudSpringBootDemo.exception.ResourceNotFoundException;
 import com.gautam.crudSpringBootDemo.repository.StudentRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class StudentService {
@@ -24,8 +25,15 @@ public class StudentService {
     public CreateStudentResponseDTO createStudent(CreateStudentRequestDTO studentReqDTO) {
         // map to Entity as in db entity is saved
         Student student = mapToEntity(studentReqDTO);
+        if (emailExists(student)) {
+            throw new DuplicateResourceException("Student with email" + student.getEmail() + " already exists");
+        }
         Student studentRes = studentRepository.save(student);
         return mapToDTO(studentRes);
+    }
+
+    private boolean emailExists(Student student) {
+        return studentRepository.existByEmail(student.getEmail());
     }
 
     private Student mapToEntity(CreateStudentRequestDTO studentReqDTO) {
@@ -56,19 +64,26 @@ public class StudentService {
     }
 
     public CreateStudentResponseDTO getSingleStudent(Long id) {
+//
+////        Optional<Student> studentRes = studentRepository.findById(id);
+//        Optional<Student> studentRes = studentRepository.findByIdAndDeletedIsFalse(id);
+////        if (studentRes.isPresent()) {
+////            return mapToDTO(studentRes.get());
+////        } else {
+////            return null;
+////        }
+//        return mapToDTO(studentRes.get());
+        Student studentResp = studentRepository
+                .findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Student with id" + id + " not found"));
 
-//        Optional<Student> studentRes = studentRepository.findById(id);
-        Optional<Student> studentRes = studentRepository.findByIdAndDeletedIsFalse(id);
-        if (studentRes.isPresent()) {
-            return mapToDTO(studentRes.get());
-        } else {
-            return null;
-        }
+        return mapToDTO(studentResp);
     }
 
     public List<CreateStudentResponseDTO> getAllStudents() {
 
         List<Student> studentList = studentRepository.findByDeletedIsFalse();
+
 //        List<Student> studentList = studentRepository.findAll();
         return studentList.stream().
                 map(this::mapToDTO)
@@ -77,19 +92,20 @@ public class StudentService {
     }
 
     public UpdateStudentResponseDTO updateStudent(Long id, UpdateStudentRequestDTO updateStudentRequestDTO) {
-        Optional<Student> existingStudent = studentRepository.findByIdAndDeletedIsFalse(id);
-        if (existingStudent.isEmpty()) {
-            return null;
-        } else {
-            Student studentToBeUpdated = existingStudent.get();
-            studentToBeUpdated.setName(updateStudentRequestDTO.getName());
-            studentToBeUpdated.setAge(updateStudentRequestDTO.getAge());
-            studentToBeUpdated.setSubject(updateStudentRequestDTO.getSubject());
-            studentToBeUpdated.setUpdatedAt(LocalDateTime.now());
-            Student updatedStudent = studentRepository.save(studentToBeUpdated);
+        Student studentToBeUpdated = studentRepository
+                .findByIdAndDeletedIsFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Student with id" + id + " not found"));
+//        if (existingStudent.isEmpty()) {
+//            return null;
+//        } else {
+        studentToBeUpdated.setName(updateStudentRequestDTO.getName());
+        studentToBeUpdated.setAge(updateStudentRequestDTO.getAge());
+        studentToBeUpdated.setSubject(updateStudentRequestDTO.getSubject());
+        studentToBeUpdated.setUpdatedAt(LocalDateTime.now());
+        Student updatedStudent = studentRepository.save(studentToBeUpdated);
 
-            return mapToUpdateDTO(updatedStudent);
-        }
+        return mapToUpdateDTO(updatedStudent);
+//        }
     }
 
     private UpdateStudentResponseDTO mapToUpdateDTO(Student updatedStudent) {
@@ -105,27 +121,30 @@ public class StudentService {
         return updateStudentResponseDTO;
     }
 
-    public Boolean deleteStudent(Long id) {
-        Boolean isStudent = studentRepository.existsById(id);
-        if (isStudent) {
-            studentRepository.deleteById(id);
-            return true;
-        } else {
-            return false;
-        }
+    public void deleteStudent(Long id) {
+        Student studentToBeDeleted = studentRepository
+                .findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Student with id" + id + "not found;"));
+        studentRepository.delete(studentToBeDeleted);
+        //        if (isStudent) {
+//            return true;
+//        } else {
+//            return false;
+//        }
     }
 
-    public Boolean deleteStudentSoftly(Long id) {
+    public void deleteStudentSoftly(Long id) {
         // get the record
-        Optional<Student> existingStudent = studentRepository.findByIdAndDeletedIsFalse(id);
-        if (existingStudent.isEmpty()) {
-            return false;
-        } else {
-            Student studentToSave = existingStudent.get();
-            studentToSave.setDeleted(true);
-            studentRepository.save(existingStudent.get());
-            return true;
-        }
+        Student studentToSave = studentRepository.findByIdAndDeletedIsFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Student with id" + id + "not found"));
+//        if (existingStudent.isEmpty()) {
+//            return false;
+//        } else {
+//        Student studentToSave = existingStudent;
+        studentToSave.setDeleted(true);
+        studentRepository.save(studentToSave);
+//        return true;
+//        }
         // update is_Deleted to 0
         // save
     }

@@ -45,24 +45,23 @@ public class StudentController {
 //                .status(HttpStatus.OK)
 //                .body(studentRes);
         //or
-        if (studentRes == null) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-            //or
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity
-                .ok(studentRes);
+//        if (studentRes == null) {
+////            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+//            //or
+//            return ResponseEntity.notFound().build();
+//        }
+        return ResponseEntity.ok(studentRes);
     }
 
     // get all
     @GetMapping
     public ResponseEntity<List<CreateStudentResponseDTO>> allStudents() {
         List<CreateStudentResponseDTO> studentList = studentService.getAllStudents();
-        if (studentList.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        } else {
-            return ResponseEntity.ok(studentList);
-        }
+//        if (studentList.isEmpty()) {
+//            return ResponseEntity.notFound().build();
+//        } else {
+        return ResponseEntity.ok(studentList);
+//        }
 
     }
 
@@ -73,11 +72,11 @@ public class StudentController {
             @RequestBody UpdateStudentRequestDTO updateStudentRequestDTO
     ) {
         UpdateStudentResponseDTO updatedStudent = studentService.updateStudent(id, updateStudentRequestDTO);
-        if (updatedStudent == null) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-            //or
-            return ResponseEntity.notFound().build();
-        }
+//        if (updatedStudent == null) {
+////            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+//            //or
+//            return ResponseEntity.notFound().build();
+//        }
         return ResponseEntity
                 .ok(updatedStudent);
     }
@@ -88,20 +87,23 @@ public class StudentController {
     public ResponseEntity<String> deleteStudent(
             @PathVariable Long id
     ) {
-        boolean isDeleted = studentService.deleteStudent(id);
-        if (isDeleted) {
-            return ResponseEntity.ok("Record Deleted");
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        studentService.deleteStudent(id);
+//        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+// or
+        return ResponseEntity.noContent().build();
+//        if (isDeleted) {
+//            return ResponseEntity.ok("Record Deleted");
+//        } else {
+//        return ResponseEntity.notFound().build();
+//        }
     }
 
     @PatchMapping("{id}")
     public ResponseEntity<String> deleteStudentSoftly(
             @PathVariable Long id
     ) {
-        Boolean isDeleted = studentService.deleteStudentSoftly(id);
-        return null;
+        studentService.deleteStudentSoftly(id);
+        return ResponseEntity.noContent().build();
     }
 
 }

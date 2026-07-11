@@ -8,14 +8,18 @@ public class CreateStudentRequestDTO {
     @Size(min = 2, max = 15, message = "Student name must be within 2 to 15 character long")
     private String name;
 
-    @Min(value = 18)
-    private int age;
+    @Min(value = 18, message = "Student must be at least 18 years old")
+    @NotNull(message = "Age is required")
+    private Integer age;
 
-    @Email
+    @Email(message = "Student email must be valid")
+    @NotBlank(message = "Student email cannot be blank")
     private String email;
 
-    @NotEmpty
+    @NotNull(message = "Roll No. is required")
     private int rollNo;
+
+    @NotBlank(message = "Subject is required")
     private String subject;
 
     public String getName() {
